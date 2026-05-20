@@ -1,0 +1,932 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <title>Mariia learns German</title>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+    body{background:#0d1117;font-family:Georgia,'Times New Roman',serif;color:#e2ddd6;min-height:100vh;}
+    button{font-family:Georgia,'Times New Roman',serif;cursor:pointer;border:none;transition:all 0.18s;}
+    input{font-family:Georgia,'Times New Roman',serif;outline:none;-webkit-appearance:none;border-radius:0;}
+    #app{min-height:100vh;}
+  </style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+const TOPICS = {
+  greetings: {
+    label: "Begrüßung",
+    emoji: "👋",
+    cards: [
+      { de: "Hallo", ru: "Привет", example: "Hallo! Wie geht es dir?", exampleRu: "Привет! Как дела?" },
+      { de: "Guten Morgen", ru: "Доброе утро", example: "Guten Morgen! Schläfst du gut?", exampleRu: "Доброе утро! Ты хорошо спала?" },
+      { de: "Guten Tag", ru: "Добрый день", example: "Guten Tag, wie heißt du?", exampleRu: "Добрый день, как тебя зовут?" },
+      { de: "Guten Abend", ru: "Добрый вечер", example: "Guten Abend! Wie war dein Tag?", exampleRu: "Добрый вечер! Как прошёл твой день?" },
+      { de: "Auf Wiedersehen", ru: "До свидания", example: "Auf Wiedersehen! Bis morgen.", exampleRu: "До свидания! До завтра." },
+      { de: "Tschüss", ru: "Пока", example: "Tschüss! Mach's gut!", exampleRu: "Пока! Береги себя!" },
+      { de: "Wie geht es dir?", ru: "Как дела?", example: "Hallo! Wie geht es dir heute?", exampleRu: "Привет! Как дела сегодня?" },
+      { de: "Sehr gut, danke!", ru: "Очень хорошо, спасибо!", example: "Wie geht es dir? — Sehr gut, danke!", exampleRu: "Как дела? — Очень хорошо, спасибо!" },
+      { de: "Nicht gut.", ru: "Нехорошо.", example: "Wie geht es dir? — Nicht gut.", exampleRu: "Как дела? — Нехорошо." },
+      { de: "Woher kommst du?", ru: "Откуда ты?", example: "Woher kommst du? — Ich komme aus Russland.", exampleRu: "Откуда ты? — Я из России." },
+      { de: "Ich komme aus Russland.", ru: "Я из России.", example: "Woher kommst du? — Ich komme aus Russland.", exampleRu: "Откуда ты? — Я из России." },
+      { de: "Wie heißt du?", ru: "Как тебя зовут?", example: "Hallo! Wie heißt du?", exampleRu: "Привет! Как тебя зовут?" },
+      { de: "Ich heiße Mariia.", ru: "Меня зовут Мария.", example: "Wie heißt du? — Ich heiße Mariia.", exampleRu: "Как тебя зовут? — Меня зовут Мария." },
+      { de: "Danke!", ru: "Спасибо!", example: "Danke! Das ist sehr nett.", exampleRu: "Спасибо! Это очень мило." },
+      { de: "Bitte!", ru: "Пожалуйста!", example: "Danke! — Bitte!", exampleRu: "Спасибо! — Пожалуйста!" },
+      { de: "Entschuldigung", ru: "Извините", example: "Entschuldigung, wo ist die Toilette?", exampleRu: "Извините, где туалет?" },
+    ],
+    fill: [
+      { sentence: "Guten ___, wie geht es dir?", answer: "Morgen", hint: "Доброе утро" },
+      { sentence: "Tschüss! Auf ___!", answer: "Wiedersehen", hint: "До свидания" },
+      { sentence: "Ich ___ aus Russland.", answer: "komme", hint: "Я из России" },
+      { sentence: "Wie ___ du?", answer: "heißt", hint: "Как тебя зовут?" },
+      { sentence: "___, das ist sehr nett!", answer: "Danke", hint: "Спасибо" },
+    ],
+    mc: [
+      { q: "Was bedeutet 'Guten Abend'?", options: ["Доброе утро", "Добрый день", "Добрый вечер", "Спокойной ночи"], correct: 2 },
+      { q: "Wie sagt man 'Как дела?' auf Deutsch?", options: ["Wie heißt du?", "Wie geht es dir?", "Woher kommst du?", "Wie alt bist du?"], correct: 1 },
+      { q: "'Ich heiße Mariia' bedeutet:", options: ["Я из России", "Мне 25 лет", "Меня зовут Мария", "Я говорю по-немецки"], correct: 2 },
+      { q: "Was ist die Antwort auf 'Wie geht es dir?'", options: ["Ich heiße Mariia", "Sehr gut, danke!", "Auf Wiedersehen", "Entschuldigung"], correct: 1 },
+    ],
+    sort: [
+      { words: ["Morgen", "Guten", "!"], answer: "Guten Morgen !" },
+      { words: ["du", "heißt", "Wie", "?"], answer: "Wie heißt du ?" },
+      { words: ["geht", "Wie", "dir", "es", "?"], answer: "Wie geht es dir ?" },
+      { words: ["aus", "komme", "Ich", "Russland", "."], answer: "Ich komme aus Russland ." },
+    ],
+    pairs: [
+      { de: "Hallo", ru: "Привет" },
+      { de: "Danke", ru: "Спасибо" },
+      { de: "Bitte", ru: "Пожалуйста" },
+      { de: "Tschüss", ru: "Пока" },
+      { de: "Entschuldigung", ru: "Извините" },
+      { de: "Guten Morgen", ru: "Доброе утро" },
+    ],
+    dialog: [
+      { speaker: "A", line: "Hallo! Wie heißt du?", translation: "Привет! Как тебя зовут?" },
+      { speaker: "B", line: "Ich heiße Mariia. Und du?", translation: "Меня зовут Мария. А ты?" },
+      { speaker: "A", line: "Ich heiße Joachim. Woher kommst du?", translation: "Меня зовут Йоахим. Откуда ты?" },
+      { speaker: "B", line: "Ich komme aus Russland. Wie geht es dir?", translation: "Я из России. Как дела?" },
+      { speaker: "A", line: "Sehr gut, danke!", translation: "Очень хорошо, спасибо!" },
+    ],
+  },
+  fruits: {
+    label: "Früchte",
+    emoji: "🍎",
+    cards: [
+      { de: "der Apfel", ru: "яблоко", example: "Der Apfel ist rot.", exampleRu: "Яблоко красное." },
+      { de: "die Banane", ru: "банан", example: "Die Banane ist gelb.", exampleRu: "Банан жёлтый." },
+      { de: "die Erdbeere", ru: "клубника", example: "Die Erdbeere ist rot und süß.", exampleRu: "Клубника красная и сладкая." },
+      { de: "die Orange", ru: "апельсин", example: "Die Orange ist orange.", exampleRu: "Апельсин оранжевый." },
+      { de: "die Weintraube", ru: "виноград", example: "Die Weintrauben sind lila.", exampleRu: "Виноград фиолетовый." },
+      { de: "die Zitrone", ru: "лимон", example: "Die Zitrone ist sauer.", exampleRu: "Лимон кислый." },
+      { de: "die Kirsche", ru: "вишня", example: "Die Kirschen sind rot.", exampleRu: "Вишня красная." },
+      { de: "die Wassermelone", ru: "арбуз", example: "Die Wassermelone ist groß und süß.", exampleRu: "Арбуз большой и сладкий." },
+      { de: "die Mango", ru: "манго", example: "Die Mango ist exotisch.", exampleRu: "Манго экзотическое." },
+      { de: "die Birne", ru: "груша", example: "Die Birne ist grün.", exampleRu: "Груша зелёная." },
+      { de: "die Ananas", ru: "ананас", example: "Die Ananas ist tropisch.", exampleRu: "Ананас тропический." },
+      { de: "der Pfirsich", ru: "персик", example: "Der Pfirsich ist weich.", exampleRu: "Персик мягкий." },
+    ],
+    fill: [
+      { sentence: "Der ___ ist rot.", answer: "Apfel", hint: "яблоко" },
+      { sentence: "Die ___ sind lila.", answer: "Weintrauben", hint: "виноград" },
+      { sentence: "Die Erdbeere ist rot und ___.", answer: "süß", hint: "сладкая" },
+      { sentence: "Die ___ ist gelb.", answer: "Banane", hint: "банан" },
+      { sentence: "Die Zitrone ist ___.", answer: "sauer", hint: "кислая" },
+    ],
+    mc: [
+      { q: "Was ist 'клубника' auf Deutsch?", options: ["die Kirsche", "die Erdbeere", "die Weintraube", "die Himbeere"], correct: 1 },
+      { q: "Welchen Artikel hat 'Apfel'?", options: ["die", "das", "der", "kein Artikel"], correct: 2 },
+      { q: "Was bedeutet 'Die Banane ist gelb'?", options: ["Банан красный", "Банан жёлтый", "Банан зелёный", "Банан синий"], correct: 1 },
+      { q: "'Die Weintrauben sind lila' — welche Farbe?", options: ["rot", "gelb", "grün", "lila"], correct: 3 },
+    ],
+    sort: [
+      { words: ["rot", "ist", "Apfel", "Der", "."], answer: "Der Apfel ist rot ." },
+      { words: ["gelb", "Banane", "ist", "Die", "."], answer: "Die Banane ist gelb ." },
+      { words: ["lila", "sind", "Weintrauben", "Die", "."], answer: "Die Weintrauben sind lila ." },
+      { words: ["süß", "Erdbeere", "ist", "Die", "."], answer: "Die Erdbeere ist süß ." },
+    ],
+    pairs: [
+      { de: "der Apfel", ru: "яблоко" },
+      { de: "die Banane", ru: "банан" },
+      { de: "die Erdbeere", ru: "клубника" },
+      { de: "die Zitrone", ru: "лимон" },
+      { de: "die Kirsche", ru: "вишня" },
+      { de: "die Birne", ru: "груша" },
+    ],
+    dialog: [
+      { speaker: "A", line: "Magst du Obst?", translation: "Ты любишь фрукты?" },
+      { speaker: "B", line: "Ja! Ich mag Erdbeeren und Bananen.", translation: "Да! Я люблю клубнику и бананы." },
+      { speaker: "A", line: "Und Zitronen?", translation: "А лимоны?" },
+      { speaker: "B", line: "Nein, die Zitrone ist zu sauer!", translation: "Нет, лимон слишком кислый!" },
+      { speaker: "A", line: "Ich mag Äpfel. Der Apfel ist rot und süß.", translation: "Я люблю яблоки. Яблоко красное и сладкое." },
+    ],
+  },
+  numbers: {
+    label: "Zahlen",
+    emoji: "🔢",
+    cards: [
+      { de: "null", ru: "ноль", example: "null Grad — sehr kalt!", exampleRu: "Ноль градусов — очень холодно!" },
+      { de: "eins", ru: "один", example: "Ich habe einen Hund.", exampleRu: "У меня есть одна собака." },
+      { de: "zwei", ru: "два", example: "Ich habe zwei Katzen.", exampleRu: "У меня две кошки." },
+      { de: "drei", ru: "три", example: "Drei Äpfel, bitte!", exampleRu: "Три яблока, пожалуйста!" },
+      { de: "vier", ru: "четыре", example: "Vier Jahreszeiten.", exampleRu: "Четыре времени года." },
+      { de: "fünf", ru: "пять", example: "Fünf Finger an der Hand.", exampleRu: "Пять пальцев на руке." },
+      { de: "sechs", ru: "шесть", example: "Sechs Uhr morgens.", exampleRu: "Шесть часов утра." },
+      { de: "sieben", ru: "семь", example: "Sieben Tage in der Woche.", exampleRu: "Семь дней в неделе." },
+      { de: "acht", ru: "восемь", example: "Acht Stunden Schlaf.", exampleRu: "Восемь часов сна." },
+      { de: "neun", ru: "девять", example: "Neun Planeten.", exampleRu: "Девять планет." },
+      { de: "zehn", ru: "десять", example: "Zehn Finger!", exampleRu: "Десять пальцев!" },
+      { de: "zwanzig", ru: "двадцать", example: "Ich bin zwanzig Jahre alt.", exampleRu: "Мне двадцать лет." },
+      { de: "hundert", ru: "сто", example: "Hundert Prozent!", exampleRu: "Сто процентов!" },
+    ],
+    fill: [
+      { sentence: "Sieben Tage in der ___.", answer: "Woche", hint: "неделя" },
+      { sentence: "___ Finger an der Hand.", answer: "Fünf", hint: "пять" },
+      { sentence: "Ich bin ___ Jahre alt.", answer: "zwanzig", hint: "двадцать" },
+      { sentence: "___ Stunden Schlaf.", answer: "Acht", hint: "восемь" },
+    ],
+    mc: [
+      { q: "Was ist 'семь' auf Deutsch?", options: ["sechs", "acht", "sieben", "neun"], correct: 2 },
+      { q: "Wie viele Tage hat eine Woche?", options: ["fünf", "sechs", "sieben", "acht"], correct: 2 },
+      { q: "'Zehn' bedeutet:", options: ["восемь", "девять", "десять", "одиннадцать"], correct: 2 },
+      { q: "Was kommt nach 'vier'?", options: ["drei", "sechs", "sieben", "fünf"], correct: 3 },
+    ],
+    sort: [
+      { words: ["der", "Tage", "Sieben", "Woche", "in", "."], answer: "Sieben Tage in der Woche ." },
+      { words: ["Finger", "Hand", "Fünf", "der", "an", "."], answer: "Fünf Finger an der Hand ." },
+      { words: ["Jahre", "zwanzig", "Ich", "bin", "alt", "."], answer: "Ich bin zwanzig Jahre alt ." },
+    ],
+    pairs: [
+      { de: "eins", ru: "один" },
+      { de: "zwei", ru: "два" },
+      { de: "drei", ru: "три" },
+      { de: "vier", ru: "четыре" },
+      { de: "fünf", ru: "пять" },
+      { de: "zehn", ru: "десять" },
+    ],
+    dialog: [
+      { speaker: "A", line: "Wie alt bist du?", translation: "Сколько тебе лет?" },
+      { speaker: "B", line: "Ich bin zwanzig Jahre alt. Und du?", translation: "Мне двадцать лет. А ты?" },
+      { speaker: "A", line: "Ich bin dreißig.", translation: "Мне тридцать." },
+      { speaker: "B", line: "Wie viele Sprachen sprichst du?", translation: "Сколько языков ты знаешь?" },
+      { speaker: "A", line: "Ich spreche zwei Sprachen — Deutsch und Englisch.", translation: "Я знаю два языка — немецкий и английский." },
+    ],
+  },
+  months: {
+    label: "Monate",
+    emoji: "📅",
+    cards: [
+      { de: "Januar", ru: "январь", example: "Im Januar ist es kalt.", exampleRu: "В январе холодно." },
+      { de: "Februar", ru: "февраль", example: "Im Februar gibt es Valentinstag.", exampleRu: "В феврале есть День святого Валентина." },
+      { de: "März", ru: "март", example: "Im März beginnt der Frühling.", exampleRu: "В марте начинается весна." },
+      { de: "April", ru: "апрель", example: "Im April regnet es oft.", exampleRu: "В апреле часто идёт дождь." },
+      { de: "Mai", ru: "май", example: "Im Mai ist es schön.", exampleRu: "В мае красиво." },
+      { de: "Juni", ru: "июнь", example: "Im Juni beginnt der Sommer.", exampleRu: "В июне начинается лето." },
+      { de: "Juli", ru: "июль", example: "Im Juli ist es sehr warm.", exampleRu: "В июле очень тепло." },
+      { de: "August", ru: "август", example: "Im August machen wir Urlaub.", exampleRu: "В августе мы едем в отпуск." },
+      { de: "September", ru: "сентябрь", example: "Im September beginnt die Schule.", exampleRu: "В сентябре начинается школа." },
+      { de: "Oktober", ru: "октябрь", example: "Im Oktober werden die Blätter bunt.", exampleRu: "В октябре листья становятся разноцветными." },
+      { de: "November", ru: "ноябрь", example: "Im November ist es grau.", exampleRu: "В ноябре пасмурно." },
+      { de: "Dezember", ru: "декабрь", example: "Im Dezember gibt es Weihnachten.", exampleRu: "В декабре празднуют Рождество." },
+    ],
+    fill: [
+      { sentence: "Im ___ beginnt der Frühling.", answer: "März", hint: "март" },
+      { sentence: "Im ___ ist es sehr warm.", answer: "Juli", hint: "июль" },
+      { sentence: "Im ___ gibt es Weihnachten.", answer: "Dezember", hint: "декабрь" },
+      { sentence: "Im ___ beginnt der Sommer.", answer: "Juni", hint: "июнь" },
+    ],
+    mc: [
+      { q: "Was ist der dritte Monat?", options: ["Februar", "März", "April", "Januar"], correct: 1 },
+      { q: "'ноябрь' auf Deutsch:", options: ["Oktober", "Dezember", "November", "September"], correct: 2 },
+      { q: "In welchem Monat beginnt der Sommer?", options: ["Mai", "Juli", "Juni", "August"], correct: 2 },
+      { q: "Was kommt nach 'Oktober'?", options: ["Dezember", "September", "Januar", "November"], correct: 3 },
+    ],
+    sort: [
+      { words: ["Frühling", "März", "Im", "der", "beginnt", "."], answer: "Im März beginnt der Frühling ." },
+      { words: ["kalt", "Januar", "Im", "es", "ist", "."], answer: "Im Januar ist es kalt ." },
+      { words: ["warm", "Juli", "Im", "sehr", "es", "ist", "."], answer: "Im Juli ist es sehr warm ." },
+    ],
+    pairs: [
+      { de: "Januar", ru: "январь" },
+      { de: "März", ru: "март" },
+      { de: "Juni", ru: "июнь" },
+      { de: "August", ru: "август" },
+      { de: "Oktober", ru: "октябрь" },
+      { de: "Dezember", ru: "декабрь" },
+    ],
+    dialog: [
+      { speaker: "A", line: "Wann hast du Geburtstag?", translation: "Когда у тебя день рождения?" },
+      { speaker: "B", line: "Im März. Und du?", translation: "В марте. А ты?" },
+      { speaker: "A", line: "Im Dezember — kurz vor Weihnachten!", translation: "В декабре — прямо перед Рождеством!" },
+      { speaker: "B", line: "Was machst du im Sommer?", translation: "Что ты делаешь летом?" },
+      { speaker: "A", line: "Im Juli machen wir Urlaub.", translation: "В июле мы идём в отпуск." },
+    ],
+  },
+  articles: {
+    label: "Der / Die / Das",
+    emoji: "🔵",
+    cards: [
+      { de: "der Mann", ru: "мужчина (м.р.)", example: "Der Mann ist groß.", exampleRu: "Мужчина высокий." },
+      { de: "die Frau", ru: "женщина (ж.р.)", example: "Die Frau ist schön.", exampleRu: "Женщина красивая." },
+      { de: "das Kind", ru: "ребёнок (ср.р.)", example: "Das Kind spielt.", exampleRu: "Ребёнок играет." },
+      { de: "der Tisch", ru: "стол (м.р.)", example: "Der Tisch ist groß.", exampleRu: "Стол большой." },
+      { de: "die Tasche", ru: "сумка (ж.р.)", example: "Die Tasche ist rot.", exampleRu: "Сумка красная." },
+      { de: "das Buch", ru: "книга (ср.р.)", example: "Das Buch ist interessant.", exampleRu: "Книга интересная." },
+      { de: "der Apfel", ru: "яблоко (м.р.)", example: "Der Apfel ist rot.", exampleRu: "Яблоко красное." },
+      { de: "die Erdbeere", ru: "клубника (ж.р.)", example: "Die Erdbeere ist süß.", exampleRu: "Клубника сладкая." },
+      { de: "das Handy", ru: "телефон (ср.р.)", example: "Das Handy ist neu.", exampleRu: "Телефон новый." },
+      { de: "der Hund", ru: "собака (м.р.)", example: "Der Hund ist groß.", exampleRu: "Собака большая." },
+      { de: "die Katze", ru: "кошка (ж.р.)", example: "Die Katze schläft.", exampleRu: "Кошка спит." },
+      { de: "das Wasser", ru: "вода (ср.р.)", example: "Das Wasser ist kalt.", exampleRu: "Вода холодная." },
+    ],
+    fill: [
+      { sentence: "___ Tisch ist groß. (м.р.)", answer: "Der", hint: "maskulin" },
+      { sentence: "___ Tasche ist rot. (ж.р.)", answer: "Die", hint: "feminin" },
+      { sentence: "___ Buch ist interessant. (ср.р.)", answer: "Das", hint: "neutral" },
+      { sentence: "___ Hund ist groß. (м.р.)", answer: "Der", hint: "maskulin" },
+      { sentence: "___ Katze schläft. (ж.р.)", answer: "Die", hint: "feminin" },
+    ],
+    mc: [
+      { q: "Welchen Artikel hat 'Frau'?", options: ["der", "die", "das", "ein"], correct: 1 },
+      { q: "Welchen Artikel hat 'Kind'?", options: ["der", "die", "das", "eine"], correct: 2 },
+      { q: "'___ Handy ist neu.' — was fehlt?", options: ["Der", "Die", "Das", "Ein"], correct: 2 },
+      { q: "Welchen Artikel hat 'Tisch'?", options: ["der", "die", "das", "keine"], correct: 0 },
+    ],
+    sort: [
+      { words: ["groß", "Tisch", "Der", "ist", "."], answer: "Der Tisch ist groß ." },
+      { words: ["schläft", "Katze", "Die", "."], answer: "Die Katze schläft ." },
+      { words: ["interessant", "Buch", "Das", "ist", "."], answer: "Das Buch ist interessant ." },
+    ],
+    pairs: [
+      { de: "der Hund", ru: "собака (м.р.)" },
+      { de: "die Katze", ru: "кошка (ж.р.)" },
+      { de: "das Kind", ru: "ребёнок (ср.р.)" },
+      { de: "der Tisch", ru: "стол (м.р.)" },
+      { de: "die Tasche", ru: "сумка (ж.р.)" },
+      { de: "das Buch", ru: "книга (ср.р.)" },
+    ],
+    dialog: [
+      { speaker: "A", line: "Was ist das?", translation: "Что это?" },
+      { speaker: "B", line: "Das ist ein Tisch.", translation: "Это стол." },
+      { speaker: "A", line: "Und das? Ist das eine Tasche?", translation: "А это? Это сумка?" },
+      { speaker: "B", line: "Ja, die Tasche ist rot.", translation: "Да, сумка красная." },
+      { speaker: "A", line: "Das Buch ist auf dem Tisch.", translation: "Книга на столе." },
+    ],
+  },
+  ist_sind: {
+    label: "ist / sind",
+    emoji: "🟡",
+    cards: [
+      { de: "Das ist ein Apfel.", ru: "Это яблоко.", example: "Das ist ein Apfel. Er ist rot.", exampleRu: "Это яблоко. Оно красное." },
+      { de: "Das ist eine Banane.", ru: "Это банан.", example: "Das ist eine Banane. Sie ist gelb.", exampleRu: "Это банан. Он жёлтый." },
+      { de: "Das sind Weintrauben.", ru: "Это виноград.", example: "Das sind Weintrauben. Sie sind lila.", exampleRu: "Это виноград. Он фиолетовый." },
+      { de: "Das ist ein Tisch.", ru: "Это стол.", example: "Das ist ein Tisch. Er ist groß.", exampleRu: "Это стол. Он большой." },
+      { de: "Das sind Bücher.", ru: "Это книги.", example: "Das sind Bücher. Sie sind interessant.", exampleRu: "Это книги. Они интересные." },
+      { de: "Ist das ein Hund?", ru: "Это собака?", example: "Ist das ein Hund? — Ja, das ist ein Hund.", exampleRu: "Это собака? — Да, это собака." },
+      { de: "Nein, das ist eine Katze.", ru: "Нет, это кошка.", example: "Ist das ein Hund? — Nein, das ist eine Katze.", exampleRu: "Это собака? — Нет, это кошка." },
+      { de: "Das ist kein Apfel.", ru: "Это не яблоко.", example: "Das ist kein Apfel, das ist eine Birne.", exampleRu: "Это не яблоко, это груша." },
+    ],
+    fill: [
+      { sentence: "Das ___ ein Apfel.", answer: "ist", hint: "единственное число" },
+      { sentence: "Das ___ Weintrauben.", answer: "sind", hint: "множественное число" },
+      { sentence: "Das ist ___ Banane.", answer: "eine", hint: "feminin" },
+      { sentence: "Das ist ___ Tisch.", answer: "ein", hint: "maskulin" },
+      { sentence: "Ist ___ ein Hund?", answer: "das", hint: "это?" },
+    ],
+    mc: [
+      { q: "Einer oder mehrere? 'Das sind Bücher.'", options: ["Einer", "Mehrere", "Beides", "Keins"], correct: 1 },
+      { q: "Wie sagt man 'Это яблоко'?", options: ["Das sind Äpfel.", "Das ist ein Apfel.", "Das ist eine Apfel.", "Ist das Apfel?"], correct: 1 },
+      { q: "'Das ist kein Apfel' bedeutet:", options: ["Это яблоко", "Это не яблоко", "Это большое яблоко", "Яблоко красное"], correct: 1 },
+      { q: "Was passt? 'Das ___ Weintrauben.'", options: ["bin", "ist", "sind", "bist"], correct: 2 },
+    ],
+    sort: [
+      { words: ["Apfel", "Das", "ein", "ist", "."], answer: "Das ist ein Apfel ." },
+      { words: ["Weintrauben", "Das", "sind", "."], answer: "Das sind Weintrauben ." },
+      { words: ["Hund", "das", "Ist", "ein", "?"], answer: "Ist das ein Hund ?" },
+    ],
+    pairs: [
+      { de: "Das ist ein Apfel.", ru: "Это яблоко." },
+      { de: "Das sind Bücher.", ru: "Это книги." },
+      { de: "Das ist eine Katze.", ru: "Это кошка." },
+      { de: "Das ist kein Hund.", ru: "Это не собака." },
+    ],
+    dialog: [
+      { speaker: "A", line: "Was ist das?", translation: "Что это?" },
+      { speaker: "B", line: "Das ist ein Apfel.", translation: "Это яблоко." },
+      { speaker: "A", line: "Ist das eine Erdbeere?", translation: "Это клубника?" },
+      { speaker: "B", line: "Nein, das ist eine Kirsche.", translation: "Нет, это вишня." },
+      { speaker: "A", line: "Und das? Das sind Weintrauben!", translation: "А это? Это виноград!" },
+    ],
+  },
+  adjectives: {
+    label: "Adjektive",
+    emoji: "🎨",
+    cards: [
+      { de: "gut / schlecht", ru: "хорошо / плохо", example: "Das ist gut. Das ist schlecht.", exampleRu: "Это хорошо. Это плохо." },
+      { de: "groß / klein", ru: "большой / маленький", example: "Der Tisch ist groß. Die Tasse ist klein.", exampleRu: "Стол большой. Чашка маленькая." },
+      { de: "neu / alt", ru: "новый / старый", example: "Das Handy ist neu. Das Buch ist alt.", exampleRu: "Телефон новый. Книга старая." },
+      { de: "warm / kalt", ru: "тёплый / холодный", example: "Der Tee ist warm. Das Wasser ist kalt.", exampleRu: "Чай тёплый. Вода холодная." },
+      { de: "schön / hässlich", ru: "красивый / некрасивый", example: "Die Blume ist schön.", exampleRu: "Цветок красивый." },
+      { de: "schnell / langsam", ru: "быстрый / медленный", example: "Das Auto ist schnell.", exampleRu: "Машина быстрая." },
+      { de: "laut / leise", ru: "громкий / тихий", example: "Die Musik ist laut.", exampleRu: "Музыка громкая." },
+      { de: "süß / sauer", ru: "сладкий / кислый", example: "Die Erdbeere ist süß. Die Zitrone ist sauer.", exampleRu: "Клубника сладкая. Лимон кислый." },
+      { de: "interessant / langweilig", ru: "интересный / скучный", example: "Das Buch ist interessant.", exampleRu: "Книга интересная." },
+      { de: "müde", ru: "усталый/ая", example: "Ich bin müde.", exampleRu: "Я устала." },
+      { de: "glücklich", ru: "счастливый/ая", example: "Ich bin glücklich.", exampleRu: "Я счастливая." },
+    ],
+    fill: [
+      { sentence: "Die Erdbeere ist ___.", answer: "süß", hint: "сладкая" },
+      { sentence: "Das Handy ist ___.", answer: "neu", hint: "новый" },
+      { sentence: "Das Wasser ist ___.", answer: "kalt", hint: "холодная" },
+      { sentence: "Das Buch ist ___.", answer: "interessant", hint: "интересный" },
+      { sentence: "Ich bin ___.", answer: "müde", hint: "я устала" },
+    ],
+    mc: [
+      { q: "'langsam' — was ist das Gegenteil?", options: ["laut", "schnell", "leise", "neu"], correct: 1 },
+      { q: "Was bedeutet 'glücklich'?", options: ["усталый", "скучный", "счастливый", "быстрый"], correct: 2 },
+      { q: "Die Zitrone ist...", options: ["süß", "sauer", "warm", "groß"], correct: 1 },
+      { q: "'хорошо' auf Deutsch:", options: ["schlecht", "schön", "gut", "klein"], correct: 2 },
+    ],
+    sort: [
+      { words: ["süß", "Erdbeere", "ist", "Die", "."], answer: "Die Erdbeere ist süß ." },
+      { words: ["kalt", "Wasser", "ist", "Das", "."], answer: "Das Wasser ist kalt ." },
+      { words: ["schnell", "Auto", "ist", "Das", "."], answer: "Das Auto ist schnell ." },
+    ],
+    pairs: [
+      { de: "groß", ru: "большой" },
+      { de: "klein", ru: "маленький" },
+      { de: "warm", ru: "тёплый" },
+      { de: "kalt", ru: "холодный" },
+      { de: "neu", ru: "новый" },
+      { de: "alt", ru: "старый" },
+    ],
+    dialog: [
+      { speaker: "A", line: "Wie ist das Wetter heute?", translation: "Какая сегодня погода?" },
+      { speaker: "B", line: "Es ist warm und schön!", translation: "Тепло и красиво!" },
+      { speaker: "A", line: "Gut! Bist du müde?", translation: "Хорошо! Ты устала?" },
+      { speaker: "B", line: "Nein, ich bin glücklich.", translation: "Нет, я счастливая." },
+      { speaker: "A", line: "Das Essen ist süß und gut.", translation: "Еда сладкая и вкусная." },
+    ],
+  },
+  possessive: {
+    label: "Mein / Meine",
+    emoji: "💼",
+    cards: [
+      { de: "mein Hund", ru: "моя собака (м.р.)", example: "Das ist mein Hund. Er heißt Max.", exampleRu: "Это моя собака. Его зовут Макс." },
+      { de: "meine Katze", ru: "моя кошка (ж.р.)", example: "Das ist meine Katze. Sie ist süß.", exampleRu: "Это моя кошка. Она милая." },
+      { de: "mein Buch", ru: "моя книга (ср.р.)", example: "Das ist mein Buch.", exampleRu: "Это моя книга." },
+      { de: "meine Mutter", ru: "моя мама", example: "Das ist meine Mutter. Sie heißt Anna.", exampleRu: "Это моя мама. Её зовут Анна." },
+      { de: "mein Vater", ru: "мой папа", example: "Das ist mein Vater.", exampleRu: "Это мой папа." },
+      { de: "mein Handy", ru: "мой телефон", example: "Das ist mein Handy. Es ist neu.", exampleRu: "Это мой телефон. Он новый." },
+      { de: "meine Tasche", ru: "моя сумка", example: "Das ist meine Tasche. Sie ist rot.", exampleRu: "Это моя сумка. Она красная." },
+      { de: "mein Name", ru: "моё имя", example: "Mein Name ist Mariia.", exampleRu: "Моё имя — Мария." },
+      { de: "meine Stadt", ru: "мой город", example: "Meine Stadt ist Ljubljana.", exampleRu: "Мой город — Любляна." },
+      { de: "mein Freund", ru: "мой друг / парень", example: "Das ist mein Freund.", exampleRu: "Это мой друг." },
+      { de: "meine Freundin", ru: "моя подруга / девушка", example: "Das ist meine Freundin.", exampleRu: "Это моя подруга." },
+    ],
+    fill: [
+      { sentence: "Das ist ___ Hund. (м.р.)", answer: "mein", hint: "maskulin: mein" },
+      { sentence: "Das ist ___ Katze. (ж.р.)", answer: "meine", hint: "feminin: meine" },
+      { sentence: "___ Name ist Mariia.", answer: "Mein", hint: "имя — neutral" },
+      { sentence: "Das ist ___ Tasche. (ж.р.)", answer: "meine", hint: "feminin: meine" },
+      { sentence: "___ Stadt ist Ljubljana.", answer: "Meine", hint: "Stadt — feminin" },
+    ],
+    mc: [
+      { q: "Maskulin oder feminin? 'meine Mutter'", options: ["maskulin", "feminin", "neutral", "plural"], correct: 1 },
+      { q: "Wie sagt man 'мой телефон'?", options: ["meine Handy", "mein Handy", "meins Handy", "der Handy"], correct: 1 },
+      { q: "'mein' oder 'meine'? — ___ Vater", options: ["meine", "mein", "meins", "meine"], correct: 1 },
+      { q: "Was bedeutet 'Meine Stadt ist Ljubljana'?", options: ["Мой друг — Йоахим", "Моя мама — Анна", "Мой город — Любляна", "Мой телефон новый"], correct: 2 },
+    ],
+    sort: [
+      { words: ["Hund", "mein", "Das", "ist", "."], answer: "Das ist mein Hund ." },
+      { words: ["Mariia", "Name", "Mein", "ist", "."], answer: "Mein Name ist Mariia ." },
+      { words: ["Ljubljana", "Stadt", "Meine", "ist", "."], answer: "Meine Stadt ist Ljubljana ." },
+    ],
+    pairs: [
+      { de: "mein Hund", ru: "моя собака" },
+      { de: "meine Katze", ru: "моя кошка" },
+      { de: "mein Buch", ru: "моя книга" },
+      { de: "mein Name", ru: "моё имя" },
+      { de: "meine Stadt", ru: "мой город" },
+      { de: "mein Freund", ru: "мой друг" },
+    ],
+    dialog: [
+      { speaker: "A", line: "Wie heißt dein Hund?", translation: "Как зовут твою собаку?" },
+      { speaker: "B", line: "Mein Hund heißt Bruno.", translation: "Мою собаку зовут Бруно." },
+      { speaker: "A", line: "Und deine Katze?", translation: "А твоя кошка?" },
+      { speaker: "B", line: "Meine Katze heißt Luna. Sie ist süß.", translation: "Мою кошку зовут Луна. Она милая." },
+      { speaker: "A", line: "Mein Name ist Mariia. Meine Stadt ist Ljubljana.", translation: "Меня зовут Мария. Мой город — Любляна." },
+    ],
+  },
+};
+
+const MODES = [
+  { id: "cards", label: "Lernkarten", icon: "🃏" },
+  { id: "fill", label: "Lückentext", icon: "✍️" },
+  { id: "mc", label: "Multiple Choice", icon: "☑️" },
+  { id: "sort", label: "Wörter ordnen", icon: "🔀" },
+  { id: "pairs", label: "Paare finden", icon: "🔗" },
+  { id: "dialog", label: "Dialog", icon: "💬" },
+];
+
+// ── utils ──────────────────────────────────────────────────────────────────
+function shuffle(arr){
+  const a=[...arr];
+  for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}
+  return a;
+}
+
+function h(tag,attrs,...children){
+  const el=document.createElement(tag);
+  for(const[k,v] of Object.entries(attrs||{})){
+    if(k==='style'&&typeof v==='object'){Object.assign(el.style,v);}
+    else if(k.startsWith('on')&&typeof v==='function'){el.addEventListener(k.slice(2).toLowerCase(),v);}
+    else if(k==='className'){el.className=v;}
+    else{el.setAttribute(k,v);}
+  }
+  for(const c of children.flat()){
+    if(c==null||c===false)continue;
+    el.appendChild(typeof c==='string'?document.createTextNode(c):c);
+  }
+  return el;
+}
+
+// ── state & render ─────────────────────────────────────────────────────────
+let state = {
+  screen: 'home',   // 'home' | 'exercise'
+  topicKey: 'greetings',
+  modeId: 'cards',
+  score: {correct:0,total:0},
+  // per-mode
+  cardIdx:0, cardStage:0,
+  fillIdx:0, fillVal:'', fillResult:null,
+  mcIdx:0, mcChosen:null,
+  sortIdx:0, sortPool:[], sortChosen:[],
+  pairsCards:[], pairsSel:[], pairsMatched:[], pairsWrong:[], pairsDone:false,
+  dialogRevealed:[], dialogShowAll:false,
+};
+
+function setState(patch){
+  Object.assign(state,typeof patch==='function'?patch(state):patch);
+  render();
+}
+
+function addScore(correct){
+  setState(s=>({score:{correct:s.score.correct+(correct?1:0),total:s.score.total+1}}));
+}
+
+function selectTopic(key){
+  setState({screen:'exercise',topicKey:key,modeId:'cards',score:{correct:0,total:0}});
+  initMode('cards',key);
+}
+function selectMode(id){
+  setState({modeId:id,score:{correct:0,total:0}});
+  initMode(id,state.topicKey);
+}
+function goHome(){setState({screen:'home',score:{correct:0,total:0}});}
+
+function initMode(modeId,topicKey){
+  const topic=TOPICS[topicKey];
+  if(modeId==='cards'){setState({cardIdx:0,cardStage:0});}
+  else if(modeId==='fill'){setState({fillIdx:0,fillVal:'',fillResult:null});}
+  else if(modeId==='mc'){setState({mcIdx:0,mcChosen:null});}
+  else if(modeId==='sort'){initSort(topic,0);}
+  else if(modeId==='pairs'){initPairs(topic);}
+  else if(modeId==='dialog'){setState({dialogRevealed:[],dialogShowAll:false});}
+}
+
+function initSort(topic,idx){
+  const item=topic.sort[idx];
+  setState({sortIdx:idx,sortPool:shuffle(item.words).map((w,i)=>({w,id:i})),sortChosen:[],sortResult:null});
+}
+function initPairs(topic){
+  const pairs=topic.pairs;
+  const all=[
+    ...pairs.map((p,i)=>({id:'de'+i,text:p.de,pairId:i,side:'de'})),
+    ...pairs.map((p,i)=>({id:'ru'+i,text:p.ru,pairId:i,side:'ru'})),
+  ];
+  setState({pairsCards:shuffle(all),pairsSel:[],pairsMatched:[],pairsWrong:[],pairsDone:false});
+}
+
+// ── styles ──────────────────────────────────────────────────────────────────
+const S={
+  bg:'linear-gradient(160deg,#0d1117 0%,#161b27 50%,#0d1a2d 100%)',
+  gold:'#e8b84b',
+  blue:'#90c8f0',
+  green:'#70e090',
+  red:'#e07070',
+  card:{background:'rgba(255,255,255,0.04)',border:'1px solid rgba(255,255,255,0.09)',borderRadius:'16px',padding:'22px 18px'},
+  btnBase:{background:'rgba(255,255,255,0.05)',border:'1px solid rgba(255,255,255,0.1)',borderRadius:'11px',padding:'11px 14px',color:'rgba(255,255,255,0.45)',fontSize:'14px'},
+  btnGold:{background:'rgba(232,184,75,0.12)',border:'1px solid rgba(232,184,75,0.28)',color:'#e8b84b'},
+};
+
+// ── screens ─────────────────────────────────────────────────────────────────
+function renderHome(){
+  return h('div',{style:{minHeight:'100vh',background:S.bg,paddingBottom:'40px'}},
+    h('div',{style:{padding:'32px 20px 24px',textAlign:'center',borderBottom:'1px solid rgba(255,255,255,0.06)'}},
+      h('div',{style:{fontSize:'36px',marginBottom:'8px'}},'🇩🇪'),
+      h('div',{style:{fontSize:'22px',fontWeight:'700',color:S.gold,letterSpacing:'0.02em'}},'Mariia learns German'),
+      h('div',{style:{fontSize:'12px',color:'rgba(255,255,255,0.3)',marginTop:'4px'}},'Choose a topic')
+    ),
+    h('div',{style:{padding:'20px 16px',display:'grid',gridTemplateColumns:'1fr 1fr',gap:'12px'}},
+      ...Object.entries(TOPICS).map(([key,t])=>
+        h('button',{
+          style:{background:'rgba(255,255,255,0.04)',border:'1.5px solid rgba(255,255,255,0.08)',
+            borderRadius:'16px',padding:'22px 12px',textAlign:'center',color:'#e2ddd6',
+            display:'flex',flexDirection:'column',alignItems:'center',gap:'8px',width:'100%'},
+          onClick:()=>selectTopic(key)
+        },
+          h('span',{style:{fontSize:'30px'}},t.emoji),
+          h('span',{style:{fontSize:'13px',color:'rgba(255,255,255,0.7)',lineHeight:'1.3'}},t.label)
+        )
+      )
+    )
+  );
+}
+
+function renderExercise(){
+  const topic=TOPICS[state.topicKey];
+  const mode=MODES.find(m=>m.id===state.modeId);
+  const acc=state.score.total>0?Math.round(state.score.correct/state.score.total*100):null;
+
+  return h('div',{style:{minHeight:'100vh',background:S.bg,display:'flex',flexDirection:'column'}},
+    // top bar
+    h('div',{style:{background:'rgba(255,255,255,0.03)',borderBottom:'1px solid rgba(255,255,255,0.07)',
+      padding:'12px 16px',display:'flex',alignItems:'center',gap:'12px'}},
+      h('button',{
+        style:{background:'rgba(255,255,255,0.06)',borderRadius:'10px',padding:'8px 14px',
+          color:'rgba(255,255,255,0.5)',fontSize:'18px',lineHeight:'1'},
+        onClick:goHome
+      },'←'),
+      h('div',{style:{flex:'1'}},
+        h('div',{style:{fontSize:'15px',fontWeight:'700',color:S.gold}},topic.emoji+' '+topic.label),
+        h('div',{style:{fontSize:'11px',color:'rgba(255,255,255,0.3)'}},mode.icon+' '+mode.label)
+      ),
+      acc!==null?h('div',{style:{
+        background:acc>=70?'rgba(80,200,110,0.12)':'rgba(210,90,90,0.12)',
+        border:`1px solid ${acc>=70?'rgba(80,200,110,0.3)':'rgba(210,90,90,0.3)'}`,
+        borderRadius:'10px',padding:'5px 10px',fontSize:'12px',
+        color:acc>=70?S.green:S.red
+      }},state.score.correct+'/'+state.score.total):null
+    ),
+    // mode grid 2x3
+    h('div',{style:{padding:'10px 14px',display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:'7px'}},
+      ...MODES.map(m=>
+        h('button',{
+          style:{
+            background:state.modeId===m.id?'rgba(232,184,75,0.15)':'rgba(255,255,255,0.04)',
+            border:state.modeId===m.id?'1.5px solid rgba(232,184,75,0.35)':'1.5px solid rgba(255,255,255,0.07)',
+            borderRadius:'10px',padding:'8px 4px',
+            color:state.modeId===m.id?S.gold:'rgba(255,255,255,0.4)',
+            fontSize:'11px',textAlign:'center',lineHeight:'1.4',width:'100%'
+          },
+          onClick:()=>selectMode(m.id)
+        },
+          h('div',{style:{fontSize:'16px',marginBottom:'2px'}},m.icon),
+          h('div',{},m.label)
+        )
+      )
+    ),
+    // content
+    h('div',{style:{padding:'8px 14px 30px',flex:'1'}},
+      state.modeId==='cards'  ? renderCards(topic)  :
+      state.modeId==='fill'   ? renderFill(topic)   :
+      state.modeId==='mc'     ? renderMC(topic)     :
+      state.modeId==='sort'   ? renderSort(topic)   :
+      state.modeId==='pairs'  ? renderPairs(topic)  :
+      renderDialog(topic)
+    )
+  );
+}
+
+// ── FLASHCARDS ───────────────────────────────────────────────────────────────
+function renderCards(topic){
+  const card=topic.cards[state.cardIdx];
+  const stage=state.cardStage;
+
+  const bgMap=['rgba(255,255,255,0.04)','rgba(144,200,240,0.07)','rgba(232,184,75,0.07)'];
+  const bdMap=['rgba(255,255,255,0.09)','rgba(144,200,240,0.2)','rgba(232,184,75,0.2)'];
+
+  const cardEl=h('div',{
+    style:{background:bgMap[stage],border:`1px solid ${bdMap[stage]}`,borderRadius:'18px',
+      padding:'32px 22px',minHeight:'190px',display:'flex',flexDirection:'column',
+      alignItems:'center',justifyContent:'center',textAlign:'center',cursor:stage<2?'pointer':'default',
+      transition:'all 0.25s',userSelect:'none'},
+    onClick:()=>{if(stage<2)setState({cardStage:stage+1});}
+  },
+    h('div',{style:{fontSize:'24px',fontWeight:'700',color:S.gold,marginBottom:'6px'}},card.de),
+    stage>=1?h('div',{style:{fontSize:'20px',color:S.blue,marginTop:'4px'}},card.ru):null,
+    stage>=2&&card.example?h('div',{style:{borderTop:'1px solid rgba(255,255,255,0.08)',paddingTop:'12px',marginTop:'12px',display:'flex',flexDirection:'column',gap:'5px'}},
+      h('div',{style:{fontSize:'13px',color:'rgba(255,255,255,0.5)',fontStyle:'italic'}},card.example),
+      card.exampleRu?h('div',{style:{fontSize:'12px',color:'rgba(144,200,240,0.55)',fontStyle:'italic'}},card.exampleRu):null
+    ):null,
+    stage===0?h('div',{style:{fontSize:'12px',color:'rgba(255,255,255,0.2)',marginTop:'10px'}},'Tap → translation 👆'):null,
+    stage===1?h('div',{style:{fontSize:'12px',color:'rgba(255,255,255,0.2)',marginTop:'10px'}},'Tap → example 👆'):null
+  );
+
+  const dots=h('div',{style:{display:'flex',justifyContent:'center',gap:'6px',marginTop:'10px'}},
+    ...[0,1,2].map(s=>h('div',{style:{width:'6px',height:'6px',borderRadius:'50%',
+      background:stage>=s?S.gold:'rgba(255,255,255,0.15)',transition:'background 0.2s'}}))
+  );
+
+  function go(dir){
+    const next=(state.cardIdx+dir+topic.cards.length)%topic.cards.length;
+    setState({cardIdx:next,cardStage:0});
+  }
+
+  const nav=h('div',{style:{display:'flex',gap:'10px',marginTop:'12px'}},
+    h('button',{style:{...S.btnBase,flex:'1'},onClick:()=>go(-1)},'← Back'),
+    h('button',{style:{...S.btnBase,...S.btnGold,flex:'2'},onClick:()=>go(1)},'Next →')
+  );
+
+  return h('div',{},
+    h('div',{style:{textAlign:'center',fontSize:'11px',color:'rgba(255,255,255,0.25)',marginBottom:'10px'}},
+      (state.cardIdx+1)+' / '+topic.cards.length),
+    cardEl,dots,nav
+  );
+}
+
+// ── FILL BLANKS ───────────────────────────────────────────────────────────────
+function renderFill(topic){
+  const item=topic.fill[state.fillIdx];
+
+  function check(){
+    const ok=state.fillVal.trim().toLowerCase()===item.answer.toLowerCase();
+    addScore(ok);
+    setState({fillResult:ok?'correct':'wrong'});
+  }
+  function next(){
+    const nextIdx=(state.fillIdx+1)%topic.fill.length;
+    setState({fillIdx:nextIdx,fillVal:'',fillResult:null});
+  }
+
+  const border=state.fillResult===null?'1px solid rgba(255,255,255,0.12)':
+    state.fillResult==='correct'?'1px solid rgba(80,200,110,0.5)':'1px solid rgba(210,90,90,0.5)';
+
+  const input=h('input',{
+    type:'text',
+    value:state.fillVal,
+    placeholder:'Your answer...',
+    style:{width:'100%',background:'rgba(255,255,255,0.06)',border,borderRadius:'10px',
+      padding:'12px 14px',color:'#e2ddd6',fontSize:'18px',textAlign:'center'},
+    onInput:(e)=>{setState({fillVal:e.target.value,fillResult:null});},
+    onKeydown:(e)=>{if(e.key==='Enter'&&!state.fillResult&&state.fillVal.trim())check();}
+  });
+
+  return h('div',{},
+    h('div',{style:{textAlign:'center',fontSize:'11px',color:'rgba(255,255,255,0.25)',marginBottom:'10px'}},
+      'Exercise '+(state.fillIdx+1)+' / '+topic.fill.length),
+    h('div',{style:{...S.card}},
+      h('div',{style:{fontSize:'19px',color:'#e2ddd6',textAlign:'center',lineHeight:'1.6',marginBottom:'6px'}},
+        item.sentence.replace('___','______')),
+      h('div',{style:{fontSize:'12px',color:'rgba(255,255,255,0.22)',textAlign:'center',marginBottom:'18px'}},
+        'Hint: '+item.hint),
+      input,
+      state.fillResult?h('div',{style:{marginTop:'10px',textAlign:'center',fontSize:'15px',
+        color:state.fillResult==='correct'?S.green:S.red}},
+        state.fillResult==='correct'?'✓ Richtig! 🎉':'✗ Answer: "'+item.answer+'"'
+      ):null
+    ),
+    h('div',{style:{marginTop:'13px'}},
+      !state.fillResult
+        ?h('button',{
+            style:{...S.btnBase,...(state.fillVal.trim()?S.btnGold:{}),width:'100%'},
+            onClick:()=>{if(state.fillVal.trim())check();}
+          },'Check ✓')
+        :h('button',{style:{...S.btnBase,...S.btnGold,width:'100%'},onClick:next},'Next →')
+    )
+  );
+}
+
+// ── MULTIPLE CHOICE ───────────────────────────────────────────────────────────
+function renderMC(topic){
+  const item=topic.mc[state.mcIdx];
+
+  function pick(i){
+    if(state.mcChosen!==null)return;
+    addScore(i===item.correct);
+    setState({mcChosen:i});
+  }
+  function next(){
+    setState({mcIdx:(state.mcIdx+1)%topic.mc.length,mcChosen:null});
+  }
+
+  const opts=item.options.map((opt,i)=>{
+    const isCorrect=i===item.correct;
+    const isChosen=state.mcChosen===i;
+    let bg='rgba(255,255,255,0.04)',border='1px solid rgba(255,255,255,0.09)',color='rgba(255,255,255,0.72)';
+    if(state.mcChosen!==null){
+      if(isCorrect){bg='rgba(80,200,110,0.1)';border='1px solid rgba(80,200,110,0.35)';color=S.green;}
+      else if(isChosen){bg='rgba(210,90,90,0.1)';border='1px solid rgba(210,90,90,0.35)';color=S.red;}
+    }
+    const label=state.mcChosen!==null&&isCorrect?'✓':state.mcChosen!==null&&isChosen?'✗':['A','B','C','D'][i];
+    return h('button',{
+      style:{background:bg,border,borderRadius:'12px',padding:'13px 16px',color,
+        fontSize:'15px',textAlign:'left',display:'flex',alignItems:'center',gap:'10px',width:'100%',
+        cursor:state.mcChosen!==null?'default':'pointer'},
+      onClick:()=>pick(i)
+    },
+      h('span',{style:{width:'26px',height:'26px',borderRadius:'50%',
+        background:state.mcChosen!==null&&isCorrect?'rgba(80,200,110,0.2)':'rgba(255,255,255,0.06)',
+        display:'flex',alignItems:'center',justifyContent:'center',fontSize:'12px',flexShrink:'0',
+        color:state.mcChosen!==null&&isCorrect?S.green:state.mcChosen!==null&&isChosen?S.red:'rgba(255,255,255,0.28)'}},
+        label),
+      opt
+    );
+  });
+
+  return h('div',{},
+    h('div',{style:{textAlign:'center',fontSize:'11px',color:'rgba(255,255,255,0.25)',marginBottom:'10px'}},
+      'Question '+(state.mcIdx+1)+' / '+topic.mc.length),
+    h('div',{style:{...S.card,marginBottom:'12px'}},
+      h('div',{style:{fontSize:'17px',color:'#e2ddd6',textAlign:'center',lineHeight:'1.5'}},item.q)
+    ),
+    h('div',{style:{display:'flex',flexDirection:'column',gap:'9px'}},...opts),
+    state.mcChosen!==null?h('button',{style:{...S.btnBase,...S.btnGold,width:'100%',marginTop:'14px'},onClick:next},'Next →'):null
+  );
+}
+
+// ── WORD SORT ─────────────────────────────────────────────────────────────────
+function renderSort(topic){
+  const item=topic.sort[state.sortIdx];
+
+  function pick(tok){
+    if(state.sortResult)return;
+    setState({sortPool:state.sortPool.filter(t=>t.id!==tok.id),sortChosen:[...state.sortChosen,tok]});
+  }
+  function unpick(tok){
+    if(state.sortResult)return;
+    setState({sortChosen:state.sortChosen.filter(t=>t.id!==tok.id),sortPool:[...state.sortPool,tok]});
+  }
+  function check(){
+    const built=state.sortChosen.map(t=>t.w).join(' ');
+    const ok=built===item.answer;
+    addScore(ok);
+    setState({sortResult:ok?'correct':'wrong'});
+  }
+  function reset(){initSort(topic,state.sortIdx);}
+  function next(){
+    const nextIdx=(state.sortIdx+1)%topic.sort.length;
+    initSort(topic,nextIdx);
+  }
+
+  return h('div',{},
+    h('div',{style:{textAlign:'center',fontSize:'11px',color:'rgba(255,255,255,0.25)',marginBottom:'10px'}},
+      'Exercise '+(state.sortIdx+1)+' / '+topic.sort.length),
+    h('div',{style:{...S.card}},
+      h('div',{style:{fontSize:'12px',color:'rgba(255,255,255,0.3)',marginBottom:'10px',textAlign:'center'}},
+        'Build a sentence — tap words in the right order:'),
+      // drop zone
+      h('div',{style:{minHeight:'50px',background:'rgba(232,184,75,0.04)',
+        border:'1.5px dashed rgba(232,184,75,0.2)',borderRadius:'10px',
+        padding:'10px 12px',display:'flex',flexWrap:'wrap',gap:'8px',marginBottom:'14px'}},
+        state.sortChosen.length===0
+          ?h('span',{style:{color:'rgba(255,255,255,0.18)',fontSize:'13px',alignSelf:'center'}},'Place words here...')
+          :state.sortChosen.map(tok=>
+            h('button',{
+              style:{background:'rgba(232,184,75,0.15)',border:'1px solid rgba(232,184,75,0.35)',
+                borderRadius:'8px',padding:'6px 12px',color:S.gold,fontSize:'15px'},
+              onClick:()=>unpick(tok)
+            },tok.w)
+          )
+      ),
+      // pool
+      h('div',{style:{display:'flex',flexWrap:'wrap',gap:'8px'}},
+        ...state.sortPool.map(tok=>
+          h('button',{
+            style:{background:'rgba(255,255,255,0.06)',border:'1px solid rgba(255,255,255,0.12)',
+              borderRadius:'8px',padding:'6px 12px',color:'rgba(255,255,255,0.7)',fontSize:'15px'},
+            onClick:()=>pick(tok)
+          },tok.w)
+        )
+      ),
+      state.sortResult?h('div',{style:{marginTop:'12px',textAlign:'center',fontSize:'15px',
+        color:state.sortResult==='correct'?S.green:S.red}},
+        state.sortResult==='correct'?'✓ Perfekt! 🎉':'✗ Answer: "'+item.answer+'"'
+      ):null
+    ),
+    h('div',{style:{display:'flex',gap:'10px',marginTop:'13px'}},
+      h('button',{style:{...S.btnBase,flex:'1'},onClick:reset},'↺ Reset'),
+      !state.sortResult
+        ?h('button',{
+            style:{...S.btnBase,...(state.sortChosen.length>0?S.btnGold:{}),flex:'2'},
+            onClick:()=>{if(state.sortChosen.length>0)check();}
+          },'Check ✓')
+        :h('button',{style:{...S.btnBase,...S.btnGold,flex:'2'},onClick:next},'Next →')
+    )
+  );
+}
+
+// ── PAIR MATCH ────────────────────────────────────────────────────────────────
+function renderPairs(topic){
+  function tap(card){
+    if(state.pairsMatched.includes(card.id)||state.pairsWrong.includes(card.id))return;
+    if(state.pairsSel.find(s=>s.id===card.id)){setState({pairsSel:[]});return;}
+    const newSel=[...state.pairsSel,card];
+    if(newSel.length===2){
+      const[a,b]=newSel;
+      if(a.pairId===b.pairId&&a.side!==b.side){
+        const newMatched=[...state.pairsMatched,a.id,b.id];
+        const done=newMatched.length===topic.pairs.length*2;
+        addScore(true);
+        setState({pairsMatched:newMatched,pairsSel:[],pairsDone:done});
+      } else {
+        addScore(false);
+        setState({pairsWrong:[a.id,b.id]});
+        setTimeout(()=>setState({pairsWrong:[],pairsSel:[]}),800);
+      }
+    } else {
+      setState({pairsSel:newSel});
+    }
+  }
+
+  const cards=state.pairsCards.map(card=>{
+    const isMatched=state.pairsMatched.includes(card.id);
+    const isSelected=!!state.pairsSel.find(s=>s.id===card.id);
+    const isWrong=state.pairsWrong.includes(card.id);
+    let bg='rgba(255,255,255,0.05)',border='1px solid rgba(255,255,255,0.1)',color='rgba(255,255,255,0.75)',opacity='1';
+    if(isMatched){bg='rgba(80,200,110,0.12)';border='1px solid rgba(80,200,110,0.3)';color=S.green;opacity='0.6';}
+    else if(isWrong){bg='rgba(210,90,90,0.12)';border='1px solid rgba(210,90,90,0.4)';color=S.red;}
+    else if(isSelected){bg='rgba(232,184,75,0.15)';border='1px solid rgba(232,184,75,0.45)';color=S.gold;}
+    return h('button',{
+      style:{background:bg,border,borderRadius:'12px',padding:'13px 10px',color,opacity,
+        fontSize:'13px',textAlign:'center',minHeight:'52px',width:'100%',
+        cursor:isMatched?'default':'pointer'},
+      onClick:()=>!isMatched&&tap(card)
+    },card.text);
+  });
+
+  return h('div',{},
+    h('div',{style:{textAlign:'center',fontSize:'11px',color:'rgba(255,255,255,0.25)',marginBottom:'10px'}},
+      'Find all pairs! '+(state.pairsMatched.length/2)+' / '+topic.pairs.length+' found'),
+    state.pairsDone?h('div',{style:{textAlign:'center',fontSize:'18px',color:S.gold,marginBottom:'14px'}},
+      '🎉 All pairs found! Wunderbar!'):null,
+    h('div',{style:{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'9px'}},...cards),
+    h('button',{style:{...S.btnBase,width:'100%',marginTop:'14px'},onClick:()=>initPairs(topic)},'↺ Shuffle again')
+  );
+}
+
+// ── DIALOG ────────────────────────────────────────────────────────────────────
+function renderDialog(topic){
+  const lines=topic.dialog.map((line,i)=>{
+    const isA=line.speaker==='A';
+    const isRevealed=state.dialogShowAll||state.dialogRevealed.includes(i);
+    return h('div',{
+      style:{display:'flex',flexDirection:'column',alignItems:isA?'flex-start':'flex-end',cursor:'pointer'},
+      onClick:()=>{
+        const rev=state.dialogRevealed.includes(i)
+          ?state.dialogRevealed.filter(x=>x!==i)
+          :[...state.dialogRevealed,i];
+        setState({dialogRevealed:rev});
+      }
+    },
+      h('div',{style:{
+        background:isA?'rgba(144,200,240,0.1)':'rgba(232,184,75,0.1)',
+        border:`1px solid ${isA?'rgba(144,200,240,0.2)':'rgba(232,184,75,0.2)'}`,
+        borderRadius:isA?'4px 14px 14px 14px':'14px 4px 14px 14px',
+        padding:'10px 14px',maxWidth:'85%'
+      }},
+        h('div',{style:{fontSize:'11px',color:isA?'rgba(144,200,240,0.5)':'rgba(232,184,75,0.5)',marginBottom:'3px'}},
+          isA?'🧑 A':'👩 B'),
+        h('div',{style:{fontSize:'15px',color:isA?S.blue:S.gold}},line.line),
+        isRevealed?h('div',{style:{fontSize:'12px',color:'rgba(255,255,255,0.35)',marginTop:'5px',fontStyle:'italic'}},
+          line.translation):null
+      )
+    );
+  });
+
+  return h('div',{},
+    h('div',{style:{fontSize:'12px',color:'rgba(255,255,255,0.3)',textAlign:'center',marginBottom:'14px'}},
+      'Read the dialog. Tap a line to see the translation.'),
+    h('div',{style:{display:'flex',flexDirection:'column',gap:'10px'}},...lines),
+    h('button',{
+      style:{...S.btnBase,width:'100%',marginTop:'16px'},
+      onClick:()=>setState({dialogShowAll:!state.dialogShowAll,dialogRevealed:[]})
+    },state.dialogShowAll?'🙈 Hide translations':'👁 Show all translations')
+  );
+}
+
+// ── RENDER LOOP ───────────────────────────────────────────────────────────────
+function render(){
+  const app=document.getElementById('app');
+  const old=app.firstChild;
+  const newEl=state.screen==='home'?renderHome():renderExercise();
+  if(old)app.replaceChild(newEl,old);
+  else app.appendChild(newEl);
+
+  // restore input value after re-render
+  if(state.screen==='exercise'&&state.modeId==='fill'){
+    const inp=app.querySelector('input');
+    if(inp){inp.value=state.fillVal;inp.focus();}
+  }
+}
+
+// init
+initMode('cards','greetings');
+render();
+</script>
+</body>
+</html>
