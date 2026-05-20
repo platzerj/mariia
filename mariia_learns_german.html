@@ -573,15 +573,15 @@ function renderExercise(){
       }},state.score.correct+'/'+state.score.total):null
     ),
     // mode grid 2x3
-    h('div',{style:{padding:'10px 14px',display:'grid',gridTemplateColumns:'repeat(3, minmax(0, 120px))',gap:'7px',justifyContent:'center',maxWidth:'500px',margin:'0 auto'}},
+    h('div',{style:{padding:'10px 14px',display:'flex',flexWrap:'wrap',gap:'7px',justifyContent:'center',maxWidth:'600px',margin:'0 auto'}},
       ...MODES.map(m=>
         h('button',{
           style:{
             background:state.modeId===m.id?'rgba(232,184,75,0.15)':'rgba(255,255,255,0.04)',
             border:state.modeId===m.id?'1.5px solid rgba(232,184,75,0.35)':'1.5px solid rgba(255,255,255,0.07)',
-            borderRadius:'10px',padding:'8px 4px',
+            borderRadius:'10px',padding:'8px 12px',
             color:state.modeId===m.id?S.gold:'rgba(255,255,255,0.4)',
-            fontSize:'11px',textAlign:'center',lineHeight:'1.4',width:'100%'
+            fontSize:'11px',textAlign:'center',lineHeight:'1.4',width:'90px',flexShrink:'0'
           },
           onClick:()=>selectMode(m.id)
         },
@@ -591,7 +591,7 @@ function renderExercise(){
       )
     ),
     // content
-    h('div',{style:{padding:'8px 14px 30px',flex:'1'}},
+    h('div',{style:{padding:'8px 14px 30px',flex:'1',maxWidth:'640px',margin:'0 auto',width:'100%'}},
       state.modeId==='cards'  ? renderCards(topic)  :
       state.modeId==='fill'   ? renderFill(topic)   :
       state.modeId==='mc'     ? renderMC(topic)     :
@@ -864,7 +864,7 @@ function renderPairs(topic){
       'Find all pairs! '+(state.pairsMatched.length/2)+' / '+topic.pairs.length+' found'),
     state.pairsDone?h('div',{style:{textAlign:'center',fontSize:'18px',color:S.gold,marginBottom:'14px'}},
       '🎉 All pairs found! Wunderbar!'):null,
-    h('div',{style:{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'9px'}},...cards),
+    h('div',{style:{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'9px',maxWidth:'500px',margin:'0 auto'}},...cards),
     h('button',{style:{...S.btnBase,width:'100%',marginTop:'14px'},onClick:()=>initPairs(topic)},'↺ Shuffle again')
   );
 }
