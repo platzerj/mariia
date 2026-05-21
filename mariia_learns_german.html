@@ -768,7 +768,10 @@ function renderFill(topic){
   const item=topic.fill[state.fillIdx];
 
   function check(){
-    const ok=state.fillVal.trim().toLowerCase()===item.answer.toLowerCase();
+    const inp=document.getElementById('fill-input');
+    const val=inp?inp.value:state.fillVal;
+    state.fillVal=val;
+    const ok=val.trim().toLowerCase()===item.answer.toLowerCase();
     addScore(ok);
     setState({fillResult:ok?'correct':'wrong'});
   }
@@ -782,7 +785,7 @@ function renderFill(topic){
 
   const input=h('input',{
     type:'text',
-    value:state.fillVal,
+    id:'fill-input',
     placeholder:'Your answer...',
     autocomplete:'off',
     autocorrect:'off',
@@ -790,8 +793,8 @@ function renderFill(topic){
     spellcheck:'false',
     style:{width:'100%',background:'rgba(255,255,255,0.8)',border,borderRadius:'10px',
       padding:'12px 14px',color:S.text,fontSize:'18px',textAlign:'center'},
-    onInput:(e)=>{setState({fillVal:e.target.value,fillResult:null});},
-    onKeydown:(e)=>{if(e.key==='Enter'&&!state.fillResult&&state.fillVal.trim())check();}
+    onInput:(e)=>{state.fillVal=e.target.value; if(state.fillResult){state.fillResult=null;render();}},
+    onKeydown:(e)=>{if(e.key==='Enter'&&!state.fillResult){const v=document.getElementById('fill-input');if(v&&v.value.trim())check();}  }
   });
 
   return h('div',{},
@@ -811,8 +814,8 @@ function renderFill(topic){
     h('div',{style:{marginTop:'13px'}},
       !state.fillResult
         ?h('button',{
-            style:{...S.btnBase,...(state.fillVal.trim()?S.btnGold:{}),width:'100%'},
-            onClick:()=>{if(state.fillVal.trim())check();}
+            style:{...S.btnBase,...S.btnGold,width:'100%'},
+            onClick:()=>{const inp=document.getElementById('fill-input');if(inp&&inp.value.trim())check();}
           },'Check ✓')
         :h('button',{style:{...S.btnBase,...S.btnGold,width:'100%'},onClick:next},'Next →')
     )
@@ -1037,8 +1040,11 @@ function render(){
 
   // restore input value after re-render
   if(state.screen==='exercise'&&state.modeId==='fill'){
-    const inp=app.querySelector('input');
-    if(inp){inp.value=state.fillVal;inp.focus();}
+    const inp=document.getElementById('fill-input');
+    if(inp){
+      inp.value=state.fillVal||'';
+      if(!state.fillResult)inp.focus();
+    }
   }
 }
 
