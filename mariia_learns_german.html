@@ -728,9 +728,12 @@ function renderCards(topic){
       transition:'all 0.25s',userSelect:'none'},
     onClick:()=>{if(stage<2)setState({cardStage:stage+1});}
   },
-    h('div',{style:{fontSize:'24px',fontWeight:'700',color:S.text,marginBottom:'6px'}},card.de),
-    stage>=1?h('div',{style:{fontSize:'20px',color:'#5a7fa8',marginTop:'4px'}},card.ru):null,
-    stage>=2&&card.example?h('div',{style:{borderTop:'1px solid rgba(255,255,255,0.08)',paddingTop:'12px',marginTop:'12px',display:'flex',flexDirection:'column',gap:'5px'}},
+    h('div',{style:{fontSize:'24px',fontWeight:'700',color:S.text,marginBottom:'2px'}},card.de),
+    card.translit?h('div',{style:{fontSize:'13px',color:S.label,marginBottom:'8px',fontStyle:'italic',letterSpacing:'0.03em'}},card.translit):null,
+    stage===0?h('div',{style:{fontSize:'12px',color:S.label,marginTop:'6px'}},'👆 Tap to see translation'):null,
+    stage>=1?h('div',{style:{fontSize:'22px',color:'#5a7fa8',marginTop:'8px',fontWeight:'600'}},card.ru):null,
+    stage===1?h('div',{style:{fontSize:'12px',color:S.label,marginTop:'6px'}},'👆 Tap to see example sentence'):null,
+    stage>=2&&card.example?h('div',{style:{borderTop:'1px solid rgba(201,169,110,0.2)',paddingTop:'12px',marginTop:'12px',display:'flex',flexDirection:'column',gap:'5px'}},
       h('div',{style:{fontSize:'13px',color:S.subtext,fontStyle:'italic'}},card.example),
       card.exampleRu?h('div',{style:{fontSize:'12px',color:'#7a9ab8',fontStyle:'italic'}},card.exampleRu):null
     ):null,
